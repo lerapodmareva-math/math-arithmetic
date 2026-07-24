@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Домашнее задание №1</title>
+<style>
+    body {
+        font-family: Arial;
+        max-width: 900px;
+        margin: auto;
+        background: #f5f5f5;
+        padding: 20px;
+    }
+    h1 {
+        text-align: center;
+    }
+    .task {
+        background: white;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 10px;
+    }
+    input {
+        width: 80px;
+        padding: 5px;
+        margin-left: 10px;
+    }
+    button {
+        padding: 10px 20px;
+        font-size: 16px;
+        margin-top: 20px;
+    }
+    .result {
+        font-weight: bold;
+        margin-top: 20px;
+        font-size: 20px;
+    }
+</style>
+</head>
+<body>
+
+<h1>Домашнее задание №1</h1>
+
+<div class="task">
+<h3>Задание 1</h3>
+1) (-4184) : 4 = <input id="q1"><br><br>
+2) (-4860) : (-12) = <input id="q2">
+</div>
+
+<div class="task">
+<h3>Задание 2</h3>
+1) 8 − (3 − 6) = <input id="q3"><br><br>
+2) 8 · (3 − 6) = <input id="q4"><br><br>
+3) −5 + (9 − 2) = <input id="q5"><br><br>
+4) −5 · (9 − 2) = <input id="q6"><br><br>
+5) −(4 − 11) = <input id="q7"><br><br>
+6) −3 · (4 − 11) = <input id="q8"><br><br>
+7) 6 − (−7 + 3) = <input id="q9"><br><br>
+8) 5 · (−7 + 3) = <input id="q10">
+</div>
+
+<div class="task">
+<h3>Задача 5</h3>
+Σ = (n − 2)π, Σ = 18π → n = <input id="q11">
+</div>
+
+<div class="task">
+<h3>Задача 6</h3>
+r = (a + b − c)/2, a=20, b=48, c=52 → r = <input id="q12">
+</div>
+
+<div class="task">
+<h3>Задача 7</h3>
+l = 60 см, n = 1300 → s (км) = <input id="q13">
+</div>
+
+<div class="task">
+<h3>Задача 8</h3>
+Q = (t2 − t1)·c·m → Q = <input id="q14">
+</div>
+
+<button onclick="checkAnswers()">Проверить</button>
+
+<div class="result" id="result"></div>
+
+<script>
+function checkAnswers() {
+    let answers = {
+        q1: -1046,
+        q2: 405,
+        q3: 11,
+        q4: -24,
+        q5: 2,
+        q6: -35,
+        q7: 7,
+        q8: 12,
+        q9: 10,
+        q10: -20,
+        q11: 20,
+        q12: 8,
+        q13: 0.78,
+        q14: 7200
+    };
+
+    let score = 0;
+    let total = Object.keys(answers).length;
+
+    for (let key in answers) {
+        let userAnswer = document.getElementById(key).value.replace(',', '.');
+        if (parseFloat(userAnswer) === answers[key]) {
+            score++;
+        }
+    }
+
+    document.getElementById("result").innerText =
+        "Результат: " + score + " из " + total;
+}
+</script>
+
+</body>
+</html>
