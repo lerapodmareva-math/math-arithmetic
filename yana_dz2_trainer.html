@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ДЗ — признаки делимости и дроби</title>
+<style>
+  :root{
+    --beige:#F5EEDF;
+    --gray:#ECECEC;
+    --gray-txt:#6b6b6b;
+    --green:#4CAF50;
+    --green-bg:#E9F5EA;
+    --red:#D64545;
+    --red-bg:#FBEAEA;
+    --blue:#2E5E8C;
+    --ink:#2a2a2a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    background: var(--gray);
+    color: var(--ink);
+    padding: 24px 12px 60px;
+  }
+  .wrap{max-width:720px;margin:0 auto;}
+  .nick{text-align:right;color:var(--gray-txt);font-weight:600;font-size:14px;margin-bottom:8px;}
+  header{text-align:center;margin-bottom:14px;}
+  header h1{color:var(--blue);font-size:26px;margin:0 0 4px;}
+  header p{margin:0;color:#555;font-style:italic;font-size:15px;}
+
+  .progress-card{
+    background:white;border-radius:14px;padding:14px 18px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    margin-bottom:22px;border:1px solid #ddd;position:sticky;top:10px;z-index:10;
+    box-shadow:0 2px 8px rgba(0,0,0,0.06);
+  }
+  .progress-stats{font-size:15px;}
+  .progress-stats b{color:var(--blue);}
+  .bar-outer{flex:1;height:10px;background:var(--gray);border-radius:6px;overflow:hidden;margin:0 14px;}
+  .bar-inner{height:100%;background:var(--green);width:0%;transition:width .3s ease;}
+
+  .group-title{
+    background:var(--gray);border-left:6px solid var(--blue);color:var(--blue);
+    font-weight:700;font-size:18px;padding:10px 14px;border-radius:4px;margin:26px 0 10px;
+  }
+  .sub-title{font-weight:700;color:var(--blue);font-size:15px;margin:16px 0 8px;}
+
+  .q{
+    background:white;border:1px solid #ddd;border-radius:12px;padding:14px 16px;
+    margin-bottom:12px;transition: background .2s, border-color .2s;
+  }
+  .q.correct{background:var(--green-bg); border-color:var(--green);}
+  .q-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .q-num{font-weight:700;color:var(--blue);}
+  .q-text{font-size:19px;flex:1;min-width:160px;}
+  .q-controls{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap;}
+
+  /* inline fraction inside question text */
+  .ifrac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 3px;font-size:0.82em;line-height:1.15;position:relative;top:2px;}
+  .ifrac .num, .ifrac .den{padding:0 4px;}
+  .ifrac .num{border-bottom:2px solid currentColor;}
+
+  /* fraction answer input: sign toggle + num/den boxes */
+  .ans-block{display:flex;align-items:center;gap:8px;}
+  .sign-toggle{
+    width:38px;height:38px;border-radius:8px;border:1px solid #bbb;background:#f5f5f5;
+    font-size:20px;font-weight:700;cursor:pointer;color:var(--red);
+  }
+  .sign-toggle.plus{color:var(--green);}
+  .frac-input{display:flex;flex-direction:column;align-items:center;}
+  .frac-input input{
+    width:64px;padding:5px 4px;font-size:16px;border:1px solid #bbb;border-radius:6px;text-align:center;
+  }
+  .frac-line{width:56px;height:2px;background:var(--ink);margin:3px 0;}
+  .frac-input input:focus{outline:2px solid var(--blue); border-color:var(--blue);}
+
+  .div-options{display:flex;gap:8px;}
+  .div-btn{
+    width:44px;height:44px;border-radius:8px;border:1px solid #bbb;background:#f5f5f5;
+    font-size:16px;font-weight:700;cursor:pointer;
+  }
+  .div-btn.active{background:var(--blue);color:white;border-color:var(--blue);}
+
+  button.check{
+    background:var(--blue);color:white;border:none;padding:9px 16px;border-radius:8px;font-size:14px;cursor:pointer;
+  }
+  button.check:hover{background:#244a70;}
+  .feedback{font-size:14px;font-weight:600;}
+  .feedback.ok{color:var(--green);}
+  .feedback.bad{color:var(--red);}
+  .feedback.hint{color:var(--gray-txt); font-weight:400; font-style:italic;}
+
+  .footer-note{text-align:center;color:var(--gray-txt);font-size:13px;margin-top:30px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="nick">@lerapodmareva</div>
+  <header>
+    <h1>Домашнее задание</h1>
+    <p>Признаки делимости и дроби</p>
+  </header>
+
+  <div class="progress-card">
+    <div class="progress-stats">Решено: <b id="doneCount">0</b> / <span id="totalCount">0</span></div>
+    <div class="bar-outer"><div class="bar-inner" id="bar"></div></div>
+  </div>
+
+  <div id="content"></div>
+
+  <div class="footer-note">Ответ на дробные примеры — числитель и знаменатель отдельно. Кнопка слева от полей меняет знак — минус печатать не нужно.</div>
+</div>
+
+<script>
+// ---------- вспомогательное: рисуем дробь внутри текста примера ----------
+function F(n, d) {
+  return `<span class="ifrac"><span class="num">${n}</span><span class="den">${d}</span></span>`;
+}
+const MINUS = '\u2212';
+
+// ---------- данные: признаки делимости ----------
+const DIVISIBILITY = [
+  ["1", "На какие из чисел 2, 3, 5, 10 делится 846?", ["2","3"]],
+  ["2", "На какие из чисел 2, 3, 5, 10 делится 315?", ["3","5"]],
+  ["3", "На какие из чисел 2, 3, 5, 10 делится 920?", ["2","5","10"]],
+];
+
+// ---------- данные: дроби (id, html текста примера, [числитель, знаменатель] ответа) ----------
+const FRACTIONS = [
+  { sub: "Сложение", items: [
+    ["4", `${F(1,4)} + ${F(1,6)}`, [5, 12]],
+    ["5", `${F(5,8)} + ${F(7,12)}`, [29, 24]],
+  ]},
+  { sub: "Вычитание", items: [
+    ["6", `${F(5,6)} ${MINUS} ${F(1,3)}`, [1, 2]],
+    ["7", `${F(7,9)} ${MINUS} ${F(5,12)}`, [13, 36]],
+  ]},
+  { sub: "Умножение", items: [
+    ["8", `${F(2,3)} × ${F(3,8)}`, [1, 4]],
+    ["9", `${F(9,16)} × ${F(8,27)}`, [1, 6]],
+  ]},
+  { sub: "Деление", items: [
+    ["10", `${F(2,3)} : ${F(4,9)}`, [3, 2]],
+    ["11", `${F(7,8)} : ${F(21,32)}`, [4, 3]],
+  ]},
+];
+
+const EGE14 = [
+  ["12", `${F(3,4)} : ${F(1,8)} + 5`, [11, 1]],
+  ["13", `${F(2,9)} : ${F(2,3)} ${MINUS} 4`, [-11, 3]],
+  ["14", `12 × (${F(1,3)} ${MINUS} ${F(1,4)})`, [1, 1]],
+  ["15", `${MINUS}${F(5,6)} + ${F(2,3)} × ${F(9,4)}`, [2, 3]],
+  ["16", `(${MINUS}${F(2,5)} + ${F(3,10)}) × (${MINUS}4)`, [2, 5]],
+  ["17", `10 × (${MINUS}${F(1,5)} + ${F(1,2)})`, [3, 1]],
+];
+
+const content = document.getElementById('content');
+let total = 0;
+let solvedCount = 0;
+const attempts = {};
+const signState = {}; // id -> 1 or -1
+const divSelected = {}; // id -> Set
+
+// ---------- рендер: признаки делимости ----------
+function renderDivQuestion(id, text, correctArr) {
+  divSelected[id] = new Set();
+  const qDiv = document.createElement('div');
+  qDiv.className = 'q';
+  qDiv.id = 'q-' + id;
+  const opts = ["2","3","5","10"].map(n =>
+    `<button type="button" class="div-btn" data-id="${id}" data-val="${n}">${n}</button>`
+  ).join('');
+  qDiv.innerHTML = `
+    <div class="q-head">
+      <div class="q-num">${id})</div>
+      <div class="q-text">${text}</div>
+    </div>
+    <div class="q-controls">
+      <div class="div-options">${opts}</div>
+      <button class="check" data-id="${id}" data-type="div">Проверить</button>
+      <span class="feedback" id="fb-${id}"></span>
+    </div>
+  `;
+  content.appendChild(qDiv);
+  attempts[id] = 0;
+  total++;
+  qDiv.correctSet = new Set(correctArr);
+}
+
+// ---------- рендер: дробный ответ ----------
+function renderFracQuestion(id, textHtml, answerArr) {
+  signState[id] = 1;
+  const qDiv = document.createElement('div');
+  qDiv.className = 'q';
+  qDiv.id = 'q-' + id;
+  qDiv.innerHTML = `
+    <div class="q-head">
+      <div class="q-num">${id})</div>
+      <div class="q-text">${textHtml}   =</div>
+    </div>
+    <div class="q-controls">
+      <div class="ans-block">
+        <button type="button" class="sign-toggle plus" data-id="${id}">+</button>
+        <div class="frac-input">
+          <input type="text" inputmode="numeric" pattern="[0-9]*" id="num-${id}" placeholder="числ.">
+          <div class="frac-line"></div>
+          <input type="text" inputmode="numeric" pattern="[0-9]*" id="den-${id}" placeholder="знам.">
+        </div>
+      </div>
+      <button class="check" data-id="${id}" data-type="frac">Проверить</button>
+      <span class="feedback" id="fb-${id}"></span>
+    </div>
+  `;
+  content.appendChild(qDiv);
+  attempts[id] = 0;
+  total++;
+  qDiv.answerNum = answerArr[0];
+  qDiv.answerDen = answerArr[1];
+}
+
+// ---------- построение страницы ----------
+const h1 = document.createElement('div');
+h1.className = 'group-title';
+h1.textContent = 'Признаки делимости';
+content.appendChild(h1);
+DIVISIBILITY.forEach(([id, text, ans]) => renderDivQuestion(id, text, ans));
+
+const h2 = document.createElement('div');
+h2.className = 'group-title';
+h2.textContent = 'Дроби: все действия';
+content.appendChild(h2);
+FRACTIONS.forEach(group => {
+  const s = document.createElement('div');
+  s.className = 'sub-title';
+  s.textContent = group.sub;
+  content.appendChild(s);
+  group.items.forEach(([id, text, ans]) => renderFracQuestion(id, text, ans));
+});
+
+const h3 = document.createElement('div');
+h3.className = 'group-title';
+h3.textContent = '№14 ЕГЭ — найдите значение выражения';
+content.appendChild(h3);
+EGE14.forEach(([id, text, ans]) => renderFracQuestion(id, text, ans));
+
+document.getElementById('totalCount').textContent = total;
+
+// ---------- обработчики ----------
+content.addEventListener('click', (e) => {
+  if (e.target.matches('.div-btn')) {
+    const id = e.target.getAttribute('data-id');
+    const val = e.target.getAttribute('data-val');
+    if (divSelected[id].has(val)) { divSelected[id].delete(val); e.target.classList.remove('active'); }
+    else { divSelected[id].add(val); e.target.classList.add('active'); }
+    return;
+  }
+  if (e.target.matches('.sign-toggle')) {
+    const id = e.target.getAttribute('data-id');
+    signState[id] = -signState[id];
+    if (signState[id] === -1) { e.target.textContent = MINUS; e.target.classList.remove('plus'); }
+    else { e.target.textContent = '+'; e.target.classList.add('plus'); }
+    return;
+  }
+  if (e.target.matches('button.check')) {
+    const id = e.target.getAttribute('data-id');
+    const type = e.target.getAttribute('data-type');
+    if (type === 'div') checkDivisibility(id);
+    else checkFraction(id);
+  }
+});
+
+function markCorrect(id) {
+  const qDiv = document.getElementById('q-' + id);
+  const fb = document.getElementById('fb-' + id);
+  qDiv.className = 'q correct';
+  fb.className = 'feedback ok';
+  const n = attempts[id];
+  const word = n === 1 ? 'верно с 1 раза' : (n === 2 ? 'верно со 2 раза' : `верно с ${n} раза`);
+  fb.textContent = '✓ ' + word;
+  qDiv.querySelectorAll('input, button').forEach(el => el.disabled = true);
+  solvedCount++;
+  updateProgress();
+}
+function markWrong(id) {
+  const fb = document.getElementById('fb-' + id);
+  fb.className = 'feedback bad';
+  fb.textContent = `✗ пока не то (попытка ${attempts[id]})`;
+}
+
+function checkDivisibility(id) {
+  const qDiv = document.getElementById('q-' + id);
+  const fb = document.getElementById('fb-' + id);
+  if (divSelected[id].size === 0) {
+    fb.className = 'feedback hint';
+    fb.textContent = 'выбери хотя бы одно число';
+    return;
+  }
+  attempts[id]++;
+  const userSet = divSelected[id];
+  const correctSet = qDiv.correctSet;
+  const same = userSet.size === correctSet.size && [...userSet].every(v => correctSet.has(v));
+  if (same) markCorrect(id); else markWrong(id);
+}
+
+function checkFraction(id) {
+  const qDiv = document.getElementById('q-' + id);
+  const fb = document.getElementById('fb-' + id);
+  const numRaw = document.getElementById('num-' + id).value.trim();
+  const denRaw = document.getElementById('den-' + id).value.trim();
+  if (numRaw === '' || denRaw === '') {
+    fb.className = 'feedback hint';
+    fb.textContent = 'заполни числитель и знаменатель';
+    return;
+  }
+  const num = parseInt(numRaw, 10) * signState[id];
+  const den = parseInt(denRaw, 10);
+  if (isNaN(num) || isNaN(den) || den === 0) {
+    fb.className = 'feedback hint';
+    fb.textContent = 'введи целые числа';
+    return;
+  }
+  attempts[id]++;
+  const userVal = num / den;
+  const correctVal = qDiv.answerNum / qDiv.answerDen;
+  if (Math.abs(userVal - correctVal) < 0.0001) markCorrect(id); else markWrong(id);
+}
+
+function updateProgress() {
+  document.getElementById('doneCount').textContent = solvedCount;
+  document.getElementById('bar').style.width = (solvedCount / total * 100) + '%';
+}
+</script>
+</body>
+</html>
