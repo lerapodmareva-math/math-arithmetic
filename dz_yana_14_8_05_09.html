@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ДЗ — №14, №8, №05, №09</title>
+<style>
+  :root{
+    --beige:#F5EEDF; --gray:#ECECEC; --gray-txt:#6b6b6b;
+    --green:#4CAF50; --green-bg:#E9F5EA; --red:#D64545; --red-bg:#FBEAEA;
+    --blue:#2E5E8C; --ink:#2a2a2a;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--gray);color:var(--ink);padding:24px 12px 60px;}
+  .wrap{max-width:740px;margin:0 auto;}
+  .nick{text-align:right;color:var(--gray-txt);font-weight:600;font-size:14px;margin-bottom:8px;}
+  header{text-align:center;margin-bottom:14px;}
+  header h1{color:var(--blue);font-size:24px;margin:0 0 4px;}
+  header p{margin:0;color:#555;font-style:italic;font-size:15px;}
+
+  .progress-card{
+    background:white;border-radius:14px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;
+    gap:12px;margin-bottom:22px;border:1px solid #ddd;position:sticky;top:10px;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,0.06);
+  }
+  .progress-stats{font-size:15px;} .progress-stats b{color:var(--blue);}
+  .bar-outer{flex:1;height:10px;background:var(--gray);border-radius:6px;overflow:hidden;margin:0 14px;}
+  .bar-inner{height:100%;background:var(--green);width:0%;transition:width .3s ease;}
+
+  .group-title{background:var(--gray);border-left:6px solid var(--blue);color:var(--blue);font-weight:700;font-size:18px;padding:10px 14px;border-radius:4px;margin:26px 0 10px;}
+
+  .q{background:white;border:1px solid #ddd;border-radius:12px;padding:14px 16px;margin-bottom:12px;transition:background .2s,border-color .2s;}
+  .q.correct{background:var(--green-bg);border-color:var(--green);}
+  .q.wrong-attempt{background:var(--red-bg);border-color:var(--red);}
+  .q-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .q-num{font-weight:700;color:var(--blue);}
+  .q-text{font-size:16px;flex:1;min-width:160px;line-height:1.4;}
+  .q-controls{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap;}
+
+  .ifrac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 3px;font-size:0.82em;line-height:1.15;position:relative;top:2px;}
+  .ifrac .num,.ifrac .den{padding:0 4px;} .ifrac .num{border-bottom:2px solid currentColor;}
+
+  .sign-toggle{width:38px;height:38px;border-radius:8px;border:1px solid #bbb;background:#f5f5f5;font-size:20px;font-weight:700;cursor:pointer;color:var(--red);flex-shrink:0;}
+  .sign-toggle.plus{color:var(--green);}
+  .comma-btn{width:38px;height:38px;border-radius:8px;border:1px solid #bbb;background:#f5f5f5;font-size:16px;font-weight:700;cursor:pointer;flex-shrink:0;}
+  .plain-input{width:130px;padding:7px 8px;font-size:16px;border:1px solid #bbb;border-radius:8px;text-align:center;}
+  input:focus{outline:2px solid var(--blue);border-color:var(--blue);}
+
+  button.check{background:var(--blue);color:white;border:none;padding:9px 16px;border-radius:8px;font-size:14px;cursor:pointer;}
+  button.check:hover{background:#244a70;}
+  .feedback{font-size:14px;font-weight:600;}
+  .feedback.ok{color:var(--green);} .feedback.bad{color:var(--red);} .feedback.hint{color:var(--gray-txt);font-weight:400;font-style:italic;}
+
+  .footer-note{text-align:center;color:var(--gray-txt);font-size:13px;margin-top:30px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="nick">@lerapodmareva</div>
+  <header>
+    <h1>Домашнее задание</h1>
+    <p>№14 ЕГЭ · №8 ЕГЭ · №05 · №09</p>
+  </header>
+
+  <div class="progress-card">
+    <div class="progress-stats">Решено: <b id="doneCount">0</b> / <span id="totalCount">0</span></div>
+    <div class="bar-outer"><div class="bar-inner" id="bar"></div></div>
+  </div>
+
+  <div id="content"></div>
+
+  <div class="footer-note">"+/−" меняет знак, "," ставит запятую. В №8 впиши номера верных утверждений подряд, без пробелов.</div>
+</div>
+
+<script>
+function F(n, d) { return `<span class="ifrac"><span class="num">${n}</span><span class="den">${d}</span></span>`; }
+const MINUS = '\u2212';
+
+const REVIEW14 = [
+  ["1", `${F(2,9)} + ${F(5,6)}`, 1.0556],
+  ["2", `${F(5,6)} ${MINUS} ${F(3,8)}`, 0.4583],
+  ["3", `${F(3,8)} × ${F(4,9)}`, 0.1667],
+  ["4", `${F(5,6)} : ${F(5,9)}`, 1.5],
+];
+
+const COMPLEX14 = [
+  ["1", `79,5 : (10${F(1,3)} ${MINUS} (${MINUS}${F(4,15)}))`, 7.5],
+  ["2", `${F("0,9","1 + " + F(1,14))}`, 0.84],
+  ["3", `(${MINUS}2${F(3,4)}) ${MINUS} 0,7 × 1${F(2,7)}`, -3.65],
+  ["4", `${F("1", F(1,9)+" "+MINUS+" "+F(1,12))}`, 36],
+  ["5", `${F(1,7)} : (${MINUS}${F(5,21)}) + 4,6`, 4],
+  ["6", `3${F(2,9)} + (${MINUS}11) + 4${F(7,9)}`, -3],
+];
+
+const LOGIC8 = [
+  ["1.13", "При взвешивании животных в зоопарке выяснилось, что буйвол тяжелее льва, медведь легче буйвола, а рысь легче льва. Выберите утверждения, которые верны при указанных условиях.<br><br>1) Рысь тяжелее буйвола.<br>2) Буйвол самый тяжёлый из всех этих животных.<br>3) Медведь тяжелее буйвола.<br>4) Рысь легче буйвола.", "24", "seq"],
+  ["1.11", "Кондитер испёк 40 печений, из них 10 штук он посыпал корицей, а 20 штук он собирается посыпать сахаром (может посыпать одно печенье и корицей, и сахаром, а может вообще ничем не посыпать). Выберите утверждения, верные независимо от того, какие печенья кондитер посыплет сахаром.<br><br>1) Найдётся 7 печений, которые ничем не посыпаны.<br>2) Найдётся 8 печений, посыпанных и сахаром, и корицей.<br>3) Если печенье посыпано корицей, то оно посыпано и сахаром.<br>4) Не может оказаться 12 печений, посыпанных и сахаром, и корицей.", "14", "seq"],
+  ["1.26", "Когда учитель математики Иван Петрович ведёт урок, он обязательно отключает свой телефон.<br><br>1) Если телефон включён — значит, не ведёт урок.<br>2) Если телефон включён — значит, ведёт урок.<br>3) Если проводит контрольную — значит, телефон выключен.<br>4) Если ведёт урок математики — значит, телефон включён.", "13", "seq"],
+  ["1.6", "В фирме N работает 50 сотрудников, из них 40 знают английский, а 20 — немецкий.<br><br>1) Хотя бы три сотрудника знают оба языка.<br>2) Нет ни одного, знающего оба языка.<br>3) Если знает английский — то знает и немецкий.<br>4) Не более 20 сотрудников знают оба языка.", "14", "seq"],
+  ["1.27", "Среди дачников есть те, кто выращивает виноград, и те, кто выращивает груши, а также те, кто не выращивает ни то ни другое. Некоторые из выращивающих виноград также выращивают и груши.<br><br>1) Если не выращивает виноград — то выращивает груши.<br>2) Среди выращивающих виноград есть дачники из посёлка.<br>3) Есть хотя бы один, кто выращивает и то, и другое.<br>4) Если выращивает виноград — то не выращивает груши.", "23", "seq"],
+];
+
+const PROB05 = [
+  ["77", "Найдите вероятность того, что случайно выбранное трёхзначное число делится на 49.", 0.02],
+  ["87", "Перед началом футбольного матча судья бросает монетку, чтобы определить, какая из команд будет владеть мячом в начале матча. Команда «Физик» играет два матча с разными командами. Найдите вероятность того, что «Физик» один раз выиграет и один раз проиграет мяч.", 0.5],
+  ["88", "Та же ситуация. Найдите вероятность того, что оба раза мяч выиграет «Физик».", 0.25],
+  ["89", "Та же ситуация. Найдите вероятность того, что «Физик» хотя бы один раз выиграет мяч.", 0.75],
+  ["90", "Та же ситуация. Найдите вероятность того, что оба раза «Физик» проиграет мяч.", 0.25],
+];
+
+const AREA09 = [
+  ["1.2", "Задание 1, пункт 2)", 14],
+  ["1.4", "Задание 1, пункт 4)", 10],
+  ["1.6", "Задание 1, пункт 6)", 20],
+  ["2.1", "Задание 2, пункт 1)", 6],
+  ["4.7", "Задание 4, пункт 7)", 4],
+  ["4.11", "Задание 4, пункт 11)", 15],
+  ["5.2", "Задание 5, пункт 2)", 26],
+  ["6.2", "Задание 6, пункт 2)", 12],
+  ["7.3", "Задание 7, пункт 3)", 26],
+  ["7.8", "Задание 7, пункт 8)", 26],
+  ["9", "Задание 9 (оз. Малое)", 2],
+  ["10", "Задание 10 (оз. Карьер)", 1],
+];
+
+const content = document.getElementById('content');
+let total = 0, solvedCount = 0;
+const attempts = {}, signState = {};
+
+function markCorrect(qDiv, fb, key) {
+  qDiv.className='q correct'; fb.className='feedback ok';
+  const n = attempts[key];
+  fb.textContent = '✓ ' + (n===1?'верно с 1 раза':(n===2?'верно со 2 раза':`верно с ${n} раза`));
+  qDiv.querySelectorAll('input,button').forEach(el=>el.disabled=true);
+  solvedCount++; updateProgress();
+}
+function markWrong(qDiv, fb, key) {
+  qDiv.className='q wrong-attempt'; fb.className='feedback bad';
+  fb.textContent = `✗ пока не то (попытка ${attempts[key]})`;
+}
+function updateProgress(){
+  document.getElementById('doneCount').textContent = solvedCount;
+  document.getElementById('bar').style.width = (solvedCount/total*100)+'%';
+}
+
+function renderItem(id, textHtml, answer, prefix, type) {
+  const key = (prefix||'') + id;
+  const isSeq = type === 'seq';
+  signState[key] = 1;
+  const qDiv = document.createElement('div');
+  qDiv.className = 'q'; qDiv.id = 'q-' + key;
+  qDiv.innerHTML = `
+    <div class="q-head"><div class="q-num">${id})</div><div class="q-text">${textHtml}</div></div>
+    <div class="q-controls">
+      ${isSeq ? '' : '<button type="button" class="sign-toggle plus">+</button>'}
+      <input type="text" inputmode="${isSeq ? 'numeric' : 'decimal'}" class="plain-input" placeholder="${isSeq ? 'напр. 24' : 'ответ'}">
+      ${isSeq ? '' : '<button type="button" class="comma-btn">,</button>'}
+      <button class="check">Проверить</button>
+      <span class="feedback"></span>
+    </div>`;
+  content.appendChild(qDiv);
+  attempts[key] = 0; total++;
+  const signBtn = qDiv.querySelector('.sign-toggle');
+  const input = qDiv.querySelector('.plain-input');
+  const commaBtn = qDiv.querySelector('.comma-btn');
+  const btn = qDiv.querySelector('button.check'), fb = qDiv.querySelector('.feedback');
+  if (signBtn) {
+    signBtn.addEventListener('click', () => {
+      signState[key] = -signState[key];
+      if (signState[key]===-1){signBtn.textContent=MINUS;signBtn.classList.remove('plus');}
+      else {signBtn.textContent='+';signBtn.classList.add('plus');}
+    });
+  }
+  if (commaBtn) commaBtn.addEventListener('click', () => { if(!input.value.includes(',')){input.value+=',';input.focus();} });
+  btn.addEventListener('click', () => {
+    const raw = input.value.trim();
+    if (raw==='') { fb.className='feedback hint'; fb.textContent='введи ответ'; return; }
+    attempts[key]++;
+    if (isSeq) {
+      const norm = raw.replace(/[^0-9]/g, '').split('').sort().join('');
+      const ansNorm = String(answer).split('').sort().join('');
+      if (norm === ansNorm) markCorrect(qDiv, fb, key); else markWrong(qDiv, fb, key);
+      return;
+    }
+    const val = signState[key]*parseFloat(raw.replace(',','.'));
+    if (isNaN(val)) { fb.className='feedback hint'; fb.textContent='введи число'; return; }
+    const tol = Math.abs(answer) < 5 ? 0.01 : 0.5;
+    if (Math.abs(val-answer) < tol) markCorrect(qDiv, fb, key); else markWrong(qDiv, fb, key);
+  });
+}
+
+function group(title) {
+  const h = document.createElement('div'); h.className='group-title'; h.textContent=title; content.appendChild(h);
+}
+
+group('№14 — повторение (одно действие)');
+REVIEW14.forEach(([id,txt,ans]) => renderItem(id, txt, ans, 'r14-'));
+
+group('№14 — комплексные примеры');
+COMPLEX14.forEach(([id,txt,ans]) => renderItem(id, txt, ans, 'c14-'));
+
+group('№8 ЕГЭ');
+LOGIC8.forEach(([id,txt,ans,type]) => renderItem(id, txt, ans, 'l8-', type));
+
+group('№05 — теория вероятностей');
+PROB05.forEach(([id,txt,ans]) => renderItem(id, txt, ans, 'p5-'));
+
+group('№09 — площадь (смотри рисунок в файле с заданиями)');
+AREA09.forEach(([id,txt,ans]) => renderItem(id, txt, ans, 'a9-'));
+
+document.getElementById('totalCount').textContent = total;
+</script>
+</body>
+</html>
