@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ДЗ — №7, №2, №05</title>
+<style>
+  :root{
+    --beige:#F5EEDF; --gray:#ECECEC; --gray-txt:#6b6b6b;
+    --green:#4CAF50; --green-bg:#E9F5EA; --red:#D64545; --red-bg:#FBEAEA;
+    --blue:#2E5E8C; --ink:#2a2a2a;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--gray);color:var(--ink);padding:24px 12px 60px;}
+  .wrap{max-width:740px;margin:0 auto;}
+  .nick{text-align:right;color:var(--gray-txt);font-weight:600;font-size:14px;margin-bottom:8px;}
+  header{text-align:center;margin-bottom:14px;}
+  header h1{color:var(--blue);font-size:24px;margin:0 0 4px;}
+  header p{margin:0;color:#555;font-style:italic;font-size:15px;}
+
+  .progress-card{
+    background:white;border-radius:14px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;
+    gap:12px;margin-bottom:22px;border:1px solid #ddd;position:sticky;top:10px;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,0.06);
+  }
+  .progress-stats{font-size:15px;} .progress-stats b{color:var(--blue);}
+  .bar-outer{flex:1;height:10px;background:var(--gray);border-radius:6px;overflow:hidden;margin:0 14px;}
+  .bar-inner{height:100%;background:var(--green);width:0%;transition:width .3s ease;}
+
+  .group-title{background:var(--gray);border-left:6px solid var(--blue);color:var(--blue);font-weight:700;font-size:18px;padding:10px 14px;border-radius:4px;margin:26px 0 10px;}
+  .group-hint{color:var(--gray-txt);font-size:13px;font-style:italic;margin:-4px 0 10px 14px;}
+
+  .q{background:white;border:1px solid #ddd;border-radius:12px;padding:14px 16px;margin-bottom:12px;transition:background .2s,border-color .2s;}
+  .q.correct{background:var(--green-bg);border-color:var(--green);}
+  .q.wrong-attempt{background:var(--red-bg);border-color:var(--red);}
+  .q-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .q-num{font-weight:700;color:var(--blue);}
+  .q-text{font-size:16px;flex:1;min-width:160px;line-height:1.4;}
+  .q-controls{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap;}
+
+  .ifrac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 3px;font-size:0.82em;line-height:1.15;position:relative;top:2px;}
+  .ifrac .num,.ifrac .den{padding:0 4px;} .ifrac .num{border-bottom:2px solid currentColor;}
+
+  .sign-toggle{width:38px;height:38px;border-radius:8px;border:1px solid #bbb;background:#f5f5f5;font-size:20px;font-weight:700;cursor:pointer;color:var(--red);flex-shrink:0;}
+  .sign-toggle.plus{color:var(--green);}
+  .comma-btn{width:38px;height:38px;border-radius:8px;border:1px solid #bbb;background:#f5f5f5;font-size:16px;font-weight:700;cursor:pointer;flex-shrink:0;}
+  .plain-input{width:130px;padding:7px 8px;font-size:16px;border:1px solid #bbb;border-radius:8px;text-align:center;}
+  input:focus{outline:2px solid var(--blue);border-color:var(--blue);}
+
+  button.check{background:var(--blue);color:white;border:none;padding:9px 16px;border-radius:8px;font-size:14px;cursor:pointer;}
+  button.check:hover{background:#244a70;}
+  .feedback{font-size:14px;font-weight:600;}
+  .feedback.ok{color:var(--green);} .feedback.bad{color:var(--red);} .feedback.hint{color:var(--gray-txt);font-weight:400;font-style:italic;}
+
+  .footer-note{text-align:center;color:var(--gray-txt);font-size:13px;margin-top:30px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="nick">@lerapodmareva</div>
+  <header>
+    <h1>Домашнее задание</h1>
+    <p>№7 ЕГЭ · №2 · №05</p>
+  </header>
+
+  <div class="progress-card">
+    <div class="progress-stats">Решено: <b id="doneCount">0</b> / <span id="totalCount">0</span></div>
+    <div class="bar-outer"><div class="bar-inner" id="bar"></div></div>
+  </div>
+
+  <div id="content"></div>
+
+  <div class="footer-note">В №7 и №2 вводи ответ как АБВГ подряд, без пробелов (например 2431). В №05 "+/−" меняет знак, "," ставит запятую.</div>
+</div>
+
+<script>
+const MINUS = '\u2212';
+
+// №7 — Анализ графиков и таблиц (смотри рисунок в файле с заданиями)
+const GRAPHS7 = [
+  ["9", "1423"],
+  ["21", "4213"],
+  ["65", "3421"],
+  ["66", "1432"],
+  ["69", "3412"],
+  ["70", "2341"],
+  ["73", "2341"],
+  ["74", "2314"],
+  ["77", "2413"],
+  ["83", "3124"],
+  ["87", "1342"],
+];
+
+// №2 — Размеры и единицы измерения (смотри рисунок в файле с заданиями)
+const AREA2 = [
+  ["3", "3412"],
+  ["16", "4123"],
+  ["30", "2431"],
+  ["51", "2431"],
+  ["54", "3421"],
+];
+
+// №05 — Теория вероятностей
+const PROB05 = [
+  ["24", "В группе туристов 8 человек. С помощью жребия они выбирают шестерых человек, которые должны идти в село в магазин за продуктами. Какова вероятность того, что турист Д., входящий в состав группы, пойдёт в магазин?", 0.75],
+  ["33", "В чемпионате мира участвуют 20 команд, среди которых есть команда Китая. С помощью жеребьёвки их нужно разделить на пять групп, по четыре команды в каждой. В ящике вперемешку лежат карточки с номерами групп: 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5. Капитаны команд тянут по одной карточке. Какова вероятность того, что команда Китая окажется в третьей группе?", 0.2],
+  ["*", "Найдите вероятность того, что случайно выбранное трёхзначное число делится на 99.", 0.01],
+];
+
+const content = document.getElementById('content');
+let total = 0, solvedCount = 0;
+const attempts = {}, signState = {};
+
+function markCorrect(qDiv, fb, key) {
+  qDiv.className='q correct'; fb.className='feedback ok';
+  const n = attempts[key];
+  fb.textContent = '✓ ' + (n===1?'верно с 1 раза':(n===2?'верно со 2 раза':`верно с ${n} раза`));
+  qDiv.querySelectorAll('input,button').forEach(el=>el.disabled=true);
+  solvedCount++; updateProgress();
+}
+function markWrong(qDiv, fb, key) {
+  qDiv.className='q wrong-attempt'; fb.className='feedback bad';
+  fb.textContent = `✗ пока не то (попытка ${attempts[key]})`;
+}
+function updateProgress(){
+  document.getElementById('doneCount').textContent = solvedCount;
+  document.getElementById('bar').style.width = (solvedCount/total*100)+'%';
+}
+
+// type: 'exact' — АБВГ-ответ, порядок цифр важен (сравниваем строку как есть)
+//       'seq'   — набор номеров, порядок неважен (сортируем перед сравнением)
+//       undefined — обычное число (с плавающей точкой, знак и запятая через кнопки)
+function renderItem(id, textHtml, answer, prefix, type) {
+  const key = (prefix||'') + id;
+  const isDigitType = type === 'exact' || type === 'seq';
+  signState[key] = 1;
+  const qDiv = document.createElement('div');
+  qDiv.className = 'q'; qDiv.id = 'q-' + key;
+  qDiv.innerHTML = `
+    <div class="q-head"><div class="q-num">${id})</div><div class="q-text">${textHtml}</div></div>
+    <div class="q-controls">
+      ${isDigitType ? '' : '<button type="button" class="sign-toggle plus">+</button>'}
+      <input type="text" inputmode="${isDigitType ? 'numeric' : 'decimal'}" class="plain-input" placeholder="${isDigitType ? 'напр. 2431' : 'ответ'}">
+      ${isDigitType ? '' : '<button type="button" class="comma-btn">,</button>'}
+      <button class="check">Проверить</button>
+      <span class="feedback"></span>
+    </div>`;
+  content.appendChild(qDiv);
+  attempts[key] = 0; total++;
+  const signBtn = qDiv.querySelector('.sign-toggle');
+  const input = qDiv.querySelector('.plain-input');
+  const commaBtn = qDiv.querySelector('.comma-btn');
+  const btn = qDiv.querySelector('button.check'), fb = qDiv.querySelector('.feedback');
+  if (signBtn) {
+    signBtn.addEventListener('click', () => {
+      signState[key] = -signState[key];
+      if (signState[key]===-1){signBtn.textContent=MINUS;signBtn.classList.remove('plus');}
+      else {signBtn.textContent='+';signBtn.classList.add('plus');}
+    });
+  }
+  if (commaBtn) commaBtn.addEventListener('click', () => { if(!input.value.includes(',')){input.value+=',';input.focus();} });
+  btn.addEventListener('click', () => {
+    const raw = input.value.trim();
+    if (raw==='') { fb.className='feedback hint'; fb.textContent='введи ответ'; return; }
+    attempts[key]++;
+    if (type === 'exact') {
+      const norm = raw.replace(/[^0-9]/g, '');
+      if (norm === String(answer)) markCorrect(qDiv, fb, key); else markWrong(qDiv, fb, key);
+      return;
+    }
+    if (type === 'seq') {
+      const norm = raw.replace(/[^0-9]/g, '').split('').sort().join('');
+      const ansNorm = String(answer).split('').sort().join('');
+      if (norm === ansNorm) markCorrect(qDiv, fb, key); else markWrong(qDiv, fb, key);
+      return;
+    }
+    const val = signState[key]*parseFloat(raw.replace(',','.'));
+    if (isNaN(val)) { fb.className='feedback hint'; fb.textContent='введи число'; return; }
+    const tol = Math.abs(answer) < 5 ? 0.01 : 0.5;
+    if (Math.abs(val-answer) < tol) markCorrect(qDiv, fb, key); else markWrong(qDiv, fb, key);
+  });
+}
+
+function group(title, hint) {
+  const h = document.createElement('div'); h.className='group-title'; h.textContent=title; content.appendChild(h);
+  if (hint) { const p = document.createElement('div'); p.className='group-hint'; p.textContent=hint; content.appendChild(p); }
+}
+
+group('№7 — Анализ графиков и таблиц', 'Смотри рисунок в файле с заданиями');
+GRAPHS7.forEach(([id,ans]) => renderItem(id, 'см. рисунок', ans, 'g7-', 'exact'));
+
+group('№2 — Размеры и единицы измерения', 'Смотри рисунок в файле с заданиями');
+AREA2.forEach(([id,ans]) => renderItem(id, 'см. рисунок', ans, 'a2-', 'exact'));
+
+group('№05 — Теория вероятностей');
+PROB05.forEach(([id,txt,ans]) => renderItem(id, txt, ans, 'p5-'));
+
+document.getElementById('totalCount').textContent = total;
+</script>
+</body>
+</html>
